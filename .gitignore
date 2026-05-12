@@ -1,0 +1,7 @@
+# Compiled binary
+source/matrix7
+source/main.o
+usr/bin/matrix7
+
+# Built deb package dir (keep the .deb file itself)
+pkg/trrs1_*/

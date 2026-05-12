@@ -1,0 +1,9 @@
+Package: trrs1
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: User <stepan200409@gmail.com>
+Depends: libc6, make, gcc
+Description: Matrix task variant 20
+ Program for processing a 7x7 matrix.
