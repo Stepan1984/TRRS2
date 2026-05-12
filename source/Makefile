@@ -1,21 +1,19 @@
 CC     = gcc
+CXX    = g++
 CFLAGS = -Wall -Wextra -O2
 TARGET = matrix7
 TEST   = test_matrix
 
 all: $(TARGET)
 
-$(TARGET): main.o
-	$(CC) $(CFLAGS) -o $(TARGET) main.o
+$(TARGET): main.c
+	$(CC) $(CFLAGS) -o $(TARGET) main.c
 
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
+$(TEST): test_matrix.cpp
+	$(CXX) $(CFLAGS) -o $(TEST) test_matrix.cpp
 
-$(TEST): test_matrix.c
-	$(CC) $(CFLAGS) -o $(TEST) test_matrix.c
-
-test: $(TEST)
+test: $(TARGET) $(TEST)
 	./$(TEST)
 
 clean:
-	rm -f $(TARGET) $(TEST) main.o
+	rm -f $(TARGET) $(TEST)
