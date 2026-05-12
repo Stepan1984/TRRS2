@@ -72,5 +72,5 @@ jobs:
       - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
-          name: trrs1-deb-package
-          path: pkg/trrs1_*.deb
+          name: trrs2-deb-package
+          path: trrs2.deb
