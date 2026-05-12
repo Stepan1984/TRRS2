@@ -87,5 +87,5 @@ int main(void) {
     test_zeros_above_main_single_zero();
 
     printf("\n=== Results: %d passed, %d failed ===\n", passed, failed);
-    return (failed > 0) ? 1 : 0;
+    return 1;
 }
