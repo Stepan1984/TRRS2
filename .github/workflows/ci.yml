@@ -74,3 +74,22 @@ jobs:
         with:
           name: trrs2-deb-package
           path: trrs2.deb
+          
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: package
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download .deb artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: trrs2-deb-package
+          path: .
+
+      - name: Build Docker image
+        run: docker build -t matrix7 .
+
+      - name: Run Docker container
+        run: docker run matrix7
