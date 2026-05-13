@@ -1,5 +1,4 @@
-FROM ubuntu:latest  # или та же версия, что на вашей виртуалке
-
+FROM ubuntu:latest
 # Копируем .deb пакет из артефакта
 COPY trrs2.deb /tmp/trrs2.deb
 RUN apt-get update && apt-get install -y /tmp/trrs2.deb
