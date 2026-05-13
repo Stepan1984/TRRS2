@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "trrs3" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "trrs3" ]
 
 permissions:
     contents: write
