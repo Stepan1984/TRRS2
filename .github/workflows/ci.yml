@@ -88,8 +88,14 @@ jobs:
           name: trrs2-deb-package
           path: .
 
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
       - name: Build Docker image
-        run: docker build -t matrix7 .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/matrix7:latest .
+
+      - name: Push to Docker Hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/matrix7:latest
 
       - name: Run Docker container
-        run: docker run matrix7
+        run: docker run ${{ secrets.DOCKER_USERNAME }}/matrix7:latest
