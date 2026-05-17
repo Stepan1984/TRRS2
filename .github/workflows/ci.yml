@@ -2,14 +2,15 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "trrs3" ]
+    branches: [ "trrs4" ]
   pull_request:
-    branches: [ "trrs3" ]
+    branches: [ "trrs4" ]
 
 permissions:
-    contents: write
+  contents: write
 
 jobs:
+
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -17,16 +18,27 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ cmake git libssl-dev zlib1g-dev libcurl4-openssl-dev
 
-      - name: Build
-        run: bash cicd/build.sh
+      - name: Build prometheus-cpp
+        run: |
+          git clone https://github.com/jupp0r/prometheus-cpp.git /tmp/prom
+          cd /tmp/prom && git submodule update --init
+          mkdir build && cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_TESTING=OFF ..
+          cmake --build . --parallel 4
+          sudo cmake --install .
+
+      - name: Build matrix7
+        run: cd source && make
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
           name: matrix7-binary
-          path: usr/bin/matrix7
+          path: source/matrix7
 
   test:
     name: Test
@@ -35,14 +47,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ cmake git libssl-dev zlib1g-dev libcurl4-openssl-dev
+
+      - name: Build prometheus-cpp
+        run: |
+          git clone https://github.com/jupp0r/prometheus-cpp.git /tmp/prom
+          cd /tmp/prom && git submodule update --init
+          mkdir build && cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_TESTING=OFF ..
+          cmake --build . --parallel 4
+          sudo cmake --install .
+
       - name: Download binary artifact
         uses: actions/download-artifact@v4
         with:
           name: matrix7-binary
-          path: usr/bin/
+          path: source/
 
       - name: Make binary executable
-        run: chmod +x usr/bin/matrix7
+        run: chmod +x source/matrix7
 
       - name: Run tests
         run: bash cicd/test.sh
@@ -74,9 +100,9 @@ jobs:
         with:
           name: trrs2-deb-package
           path: trrs2.deb
-          
+
   deploy:
-    name: Deploy
+    name: Deploy to Docker Hub + Kubernetes
     runs-on: ubuntu-latest
     needs: package
     steps:
@@ -97,5 +123,17 @@ jobs:
       - name: Push to Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/matrix7:latest
 
-      - name: Run Docker container
-        run: docker run ${{ secrets.DOCKER_USERNAME }}/matrix7:latest
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Write kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+      - name: Update image in deployment
+        run: |
+          sed -i "s|image: .*matrix7.*|image: ${{ secrets.DOCKER_USERNAME }}/matrix7:latest|g" k8s/deployment.yaml
+
+      - name: Apply Kubernetes manifests
+        run: kubectl apply -f k8s/

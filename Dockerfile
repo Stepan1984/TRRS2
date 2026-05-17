@@ -1,5 +1,27 @@
-FROM ubuntu:latest
-# Копируем .deb пакет из артефакта
-COPY trrs2.deb /tmp/trrs2.deb
-RUN apt-get update && apt-get install -y /tmp/trrs2.deb
-CMD ["/bin/sh", "-c", "echo '1 2 3 4 5 6 7  8 9 10 11 12 13 14  15 16 17 18 19 20 21  22 23 24 25 26 27 28  29 30 31 32 33 34 35  36 37 38 39 40 41 42  43 44 45 46 47 48 49' | matrix7"]
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y \
+    g++ cmake git libssl-dev zlib1g-dev libcurl4-openssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/jupp0r/prometheus-cpp.git /tmp/prom && \
+    cd /tmp/prom && git submodule update --init && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DENABLE_TESTING=OFF .. && \
+    cmake --build . --parallel 4 && \
+    cmake --install . && \
+    rm -rf /tmp/prom
+
+WORKDIR /app
+COPY source/ .
+
+RUN g++ -Wall -O2 -o matrix7 main.cpp \
+    -lprometheus-cpp-pull \
+    -lprometheus-cpp-core \
+    -lprometheus-cpp-push \
+    -lz -lpthread
+
+EXPOSE 8080
+CMD ["./matrix7", "--server"]
