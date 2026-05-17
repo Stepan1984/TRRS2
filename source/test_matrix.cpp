@@ -12,7 +12,7 @@ void run_test(const string& name, int fill_val, const string& expected) {
         input += to_string(fill_val);
     }
 
-    string cmd = "echo \"" + input + "\" | ../usr/bin/matrix7";
+    string cmd = "echo \"" + input + "\" | ./matrix7";
     FILE* pipe = popen(cmd.c_str(), "r");
     char buf[256]; string output;
     while (fgets(buf, sizeof(buf), pipe)) output += buf;
