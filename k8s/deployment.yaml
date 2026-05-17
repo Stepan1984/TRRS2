@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matrix7-deployment
+  labels:
+    app: matrix7
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: matrix7
+  template:
+    metadata:
+      labels:
+        app: matrix7
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: matrix7
+          image: matrix7:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8080
+            initialDelaySeconds: 5
+            
